@@ -107,9 +107,6 @@ namespace Microsoft.Extensions.Logging.Console
         {
             var logLevelColors = default(ConsoleColors);
             var logLevelString = string.Empty;
-            var logIdentifier = string.Empty;
-            var scopeInformation = string.Empty;
-            var exceptionText = string.Empty;
             var printLog = false;
 
             var sb = new StringBuilder();
@@ -122,17 +119,14 @@ namespace Microsoft.Extensions.Logging.Console
                 logLevelColors = GetLogLevelConsoleColors(logLevel);
                 logLevelString = GetLogLevelString(logLevel);
                 // category and event id
-                logIdentifier = _loglevelPadding + logName + "[" + eventId + "]";
-                sb.AppendLine(logIdentifier);
+                sb.AppendLine(_loglevelPadding + logName + "[" + eventId + "]");
                 // scope information
                 if (IncludeScopes)
                 {
-                    scopeInformation = GetScopeInformation();
-                    sb.AppendLine(scopeInformation);
+                    sb.AppendLine(GetScopeInformation());
                 }
                 // message
-                message = _messagePadding + ReplaceMessageNewLinesWithPadding(message);
-                sb.AppendLine(message);
+                sb.AppendLine(_messagePadding + ReplaceMessageNewLinesWithPadding(message));
                 printLog = true;
             }
 
@@ -142,13 +136,13 @@ namespace Microsoft.Extensions.Logging.Console
             if (exception != null)
             {
                 // exception message
-                exceptionText = exception.ToString();
-                sb.AppendLine(exceptionText);
+                sb.AppendLine(exception.ToString());
                 printLog = true;
             }
 
             if (printLog)
             {
+                var msg = sb.ToString();
                 lock (_lock)
                 {
                     if (!string.IsNullOrEmpty(logLevelString))
@@ -159,36 +153,9 @@ namespace Microsoft.Extensions.Logging.Console
                             logLevelColors.Background,
                             logLevelColors.Foreground);
                     }
-                    Console.WriteLine(sb.ToString(), DefaultConsoleColor, DefaultConsoleColor);
+
                     // use default colors from here on
-                    //if (!string.IsNullOrEmpty(logIdentifier))
-                    //{
-                    //    Console.WriteLine(
-                    //        logIdentifier,
-                    //        DefaultConsoleColor,
-                    //        DefaultConsoleColor);
-                    //}
-                    //if (!string.IsNullOrEmpty(scopeInformation))
-                    //{
-                    //    Console.WriteLine(
-                    //        scopeInformation,
-                    //        DefaultConsoleColor,
-                    //        DefaultConsoleColor);
-                    //}
-                    //if (!string.IsNullOrEmpty(message))
-                    //{
-                    //    Console.WriteLine(
-                    //        message,
-                    //        DefaultConsoleColor,
-                    //        DefaultConsoleColor);
-                    //}
-                    //if (!string.IsNullOrEmpty(exceptionText))
-                    //{
-                    //    Console.WriteLine(
-                    //        exceptionText,
-                    //        DefaultConsoleColor,
-                    //        DefaultConsoleColor);
-                    //}
+                    Console.Write(msg, DefaultConsoleColor, DefaultConsoleColor);
 
                     // In case of AnsiLogConsole, the messages are not yet written to the console,
                     // this would flush them instead.
