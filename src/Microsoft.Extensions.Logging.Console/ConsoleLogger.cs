@@ -112,6 +112,8 @@ namespace Microsoft.Extensions.Logging.Console
             var exceptionText = string.Empty;
             var printLog = false;
 
+            var sb = new StringBuilder();
+
             // Example:
             // INFO: ConsoleApp.Program[10]
             //       Request received
@@ -121,13 +123,16 @@ namespace Microsoft.Extensions.Logging.Console
                 logLevelString = GetLogLevelString(logLevel);
                 // category and event id
                 logIdentifier = _loglevelPadding + logName + "[" + eventId + "]";
+                sb.AppendLine(logIdentifier);
                 // scope information
                 if (IncludeScopes)
                 {
                     scopeInformation = GetScopeInformation();
+                    sb.AppendLine(scopeInformation);
                 }
                 // message
                 message = _messagePadding + ReplaceMessageNewLinesWithPadding(message);
+                sb.AppendLine(message);
                 printLog = true;
             }
 
@@ -138,6 +143,7 @@ namespace Microsoft.Extensions.Logging.Console
             {
                 // exception message
                 exceptionText = exception.ToString();
+                sb.AppendLine(exceptionText);
                 printLog = true;
             }
 
@@ -153,36 +159,36 @@ namespace Microsoft.Extensions.Logging.Console
                             logLevelColors.Background,
                             logLevelColors.Foreground);
                     }
-
+                    Console.WriteLine(sb.ToString(), DefaultConsoleColor, DefaultConsoleColor);
                     // use default colors from here on
-                    if (!string.IsNullOrEmpty(logIdentifier))
-                    {
-                        Console.WriteLine(
-                            logIdentifier,
-                            DefaultConsoleColor,
-                            DefaultConsoleColor);
-                    }
-                    if (!string.IsNullOrEmpty(scopeInformation))
-                    {
-                        Console.WriteLine(
-                            scopeInformation,
-                            DefaultConsoleColor,
-                            DefaultConsoleColor);
-                    }
-                    if (!string.IsNullOrEmpty(message))
-                    {
-                        Console.WriteLine(
-                            message,
-                            DefaultConsoleColor,
-                            DefaultConsoleColor);
-                    }
-                    if (!string.IsNullOrEmpty(exceptionText))
-                    {
-                        Console.WriteLine(
-                            exceptionText,
-                            DefaultConsoleColor,
-                            DefaultConsoleColor);
-                    }
+                    //if (!string.IsNullOrEmpty(logIdentifier))
+                    //{
+                    //    Console.WriteLine(
+                    //        logIdentifier,
+                    //        DefaultConsoleColor,
+                    //        DefaultConsoleColor);
+                    //}
+                    //if (!string.IsNullOrEmpty(scopeInformation))
+                    //{
+                    //    Console.WriteLine(
+                    //        scopeInformation,
+                    //        DefaultConsoleColor,
+                    //        DefaultConsoleColor);
+                    //}
+                    //if (!string.IsNullOrEmpty(message))
+                    //{
+                    //    Console.WriteLine(
+                    //        message,
+                    //        DefaultConsoleColor,
+                    //        DefaultConsoleColor);
+                    //}
+                    //if (!string.IsNullOrEmpty(exceptionText))
+                    //{
+                    //    Console.WriteLine(
+                    //        exceptionText,
+                    //        DefaultConsoleColor,
+                    //        DefaultConsoleColor);
+                    //}
 
                     // In case of AnsiLogConsole, the messages are not yet written to the console,
                     // this would flush them instead.
