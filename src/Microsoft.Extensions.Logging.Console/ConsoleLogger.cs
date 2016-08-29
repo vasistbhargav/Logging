@@ -5,6 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Logging.Console.Internal;
+using System.Threading;
 
 namespace Microsoft.Extensions.Logging.Console
 {
@@ -22,6 +23,9 @@ namespace Microsoft.Extensions.Logging.Console
 
         private IConsole _console;
         private Func<string, LogLevel, bool> _filter;
+
+        [ThreadStatic]
+        private static StringBuilder _sb;
 
         static ConsoleLogger()
         {
@@ -105,11 +109,14 @@ namespace Microsoft.Extensions.Logging.Console
 
         public virtual void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception exception)
         {
+            if (_sb == null)
+            {
+                _sb = new StringBuilder();
+            }
+
             var logLevelColors = default(ConsoleColors);
             var logLevelString = string.Empty;
             var printLog = false;
-
-            var sb = new StringBuilder();
 
             // Example:
             // INFO: ConsoleApp.Program[10]
@@ -119,14 +126,19 @@ namespace Microsoft.Extensions.Logging.Console
                 logLevelColors = GetLogLevelConsoleColors(logLevel);
                 logLevelString = GetLogLevelString(logLevel);
                 // category and event id
-                sb.AppendLine(_loglevelPadding + logName + "[" + eventId + "]");
+                _sb.Append(_loglevelPadding);
+                _sb.Append(logName);
+                _sb.Append("[");
+                _sb.Append(eventId);
+                _sb.AppendLine("]");
                 // scope information
                 if (IncludeScopes)
                 {
-                    sb.AppendLine(GetScopeInformation());
+                    _sb.AppendLine(GetScopeInformation());
                 }
                 // message
-                sb.AppendLine(_messagePadding + ReplaceMessageNewLinesWithPadding(message));
+                _sb.Append(_messagePadding);
+                _sb.AppendLine(ReplaceMessageNewLinesWithPadding(message));
                 printLog = true;
             }
 
@@ -136,13 +148,14 @@ namespace Microsoft.Extensions.Logging.Console
             if (exception != null)
             {
                 // exception message
-                sb.AppendLine(exception.ToString());
+                _sb.AppendLine(exception.ToString());
                 printLog = true;
             }
 
             if (printLog)
             {
-                var msg = sb.ToString();
+                var msg = _sb.ToString();
+                _sb.Clear();
                 lock (_lock)
                 {
                     if (!string.IsNullOrEmpty(logLevelString))
