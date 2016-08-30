@@ -678,7 +678,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             Assert.NotNull(disposable);
-            Assert.Equal(4, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
         }
 #endif
 

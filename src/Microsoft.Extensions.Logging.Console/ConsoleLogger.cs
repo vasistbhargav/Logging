@@ -109,9 +109,12 @@ namespace Microsoft.Extensions.Logging.Console
 
         public virtual void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception exception)
         {
-            if (_sb == null)
+            var sb = _sb;
+            _sb = null;
+
+            if (sb == null)
             {
-                _sb = new StringBuilder();
+                sb = new StringBuilder();
             }
 
             var logLevelColors = default(ConsoleColors);
@@ -126,19 +129,21 @@ namespace Microsoft.Extensions.Logging.Console
                 logLevelColors = GetLogLevelConsoleColors(logLevel);
                 logLevelString = GetLogLevelString(logLevel);
                 // category and event id
-                _sb.Append(_loglevelPadding);
-                _sb.Append(logName);
-                _sb.Append("[");
-                _sb.Append(eventId);
-                _sb.AppendLine("]");
+                sb.Append(_loglevelPadding);
+                sb.Append(logName);
+                sb.Append("[");
+                sb.Append(eventId);
+                sb.AppendLine("]");
                 // scope information
                 if (IncludeScopes)
                 {
-                    _sb.AppendLine(GetScopeInformation());
+                    GetScopeInformation(sb);
                 }
                 // message
-                _sb.Append(_messagePadding);
-                _sb.AppendLine(ReplaceMessageNewLinesWithPadding(message));
+                sb.Append(_messagePadding);
+                var len = sb.Length;
+                sb.AppendLine(message);
+                sb.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
                 printLog = true;
             }
 
@@ -148,14 +153,14 @@ namespace Microsoft.Extensions.Logging.Console
             if (exception != null)
             {
                 // exception message
-                _sb.AppendLine(exception.ToString());
+                sb.AppendLine(exception.ToString());
                 printLog = true;
             }
 
             if (printLog)
             {
-                var msg = _sb.ToString();
-                _sb.Clear();
+                var msg = sb.ToString();
+                sb.Clear();
                 lock (_lock)
                 {
                     if (!string.IsNullOrEmpty(logLevelString))
@@ -175,6 +180,8 @@ namespace Microsoft.Extensions.Logging.Console
                     Console.Flush();
                 }
             }
+
+            _sb = sb;
         }
 
         private string ReplaceMessageNewLinesWithPadding(string message)
@@ -241,14 +248,15 @@ namespace Microsoft.Extensions.Logging.Console
             }
         }
 
-        private string GetScopeInformation()
+        private void GetScopeInformation(StringBuilder builder)
         {
             var current = ConsoleLogScope.Current;
-            var output = new StringBuilder();
+            //var output = new StringBuilder();
             string scopeLog = string.Empty;
+            var length = builder.Length;
             while (current != null)
             {
-                if (output.Length == 0)
+                if (length == builder.Length)
                 {
                     scopeLog = $"=> {current}";
                 }
@@ -257,15 +265,14 @@ namespace Microsoft.Extensions.Logging.Console
                     scopeLog = $"=> {current} ";
                 }
 
-                output.Insert(0, scopeLog);
+                builder.Insert(length, scopeLog);
                 current = current.Parent;
             }
-            if (output.Length > 0)
+            if (builder.Length > length)
             {
-                output.Insert(0, _messagePadding);
+                builder.Insert(length, _messagePadding);
+                builder.AppendLine();
             }
-
-            return output.ToString();
         }
 
         private struct ConsoleColors
