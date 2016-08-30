@@ -119,7 +119,6 @@ namespace Microsoft.Extensions.Logging.Console
 
             var logLevelColors = default(ConsoleColors);
             var logLevelString = string.Empty;
-            var printLog = false;
 
             // Example:
             // INFO: ConsoleApp.Program[10]
@@ -144,7 +143,6 @@ namespace Microsoft.Extensions.Logging.Console
                 var len = sb.Length;
                 sb.AppendLine(message);
                 sb.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
-                printLog = true;
             }
 
             // Example:
@@ -154,10 +152,9 @@ namespace Microsoft.Extensions.Logging.Console
             {
                 // exception message
                 sb.AppendLine(exception.ToString());
-                printLog = true;
             }
 
-            if (printLog)
+            if (sb.Length > 0)
             {
                 var msg = sb.ToString();
                 lock (_lock)
@@ -180,11 +177,11 @@ namespace Microsoft.Extensions.Logging.Console
                 }
             }
 
+            sb.Clear();
             if (sb.Capacity > 1024)
             {
                 sb.Capacity = 1024;
             }
-            sb.Clear();
             _sb = sb;
         }
 
@@ -255,7 +252,6 @@ namespace Microsoft.Extensions.Logging.Console
         private void GetScopeInformation(StringBuilder builder)
         {
             var current = ConsoleLogScope.Current;
-            //var output = new StringBuilder();
             string scopeLog = string.Empty;
             var length = builder.Length;
             while (current != null)
