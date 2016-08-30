@@ -160,7 +160,6 @@ namespace Microsoft.Extensions.Logging.Console
             if (printLog)
             {
                 var msg = sb.ToString();
-                sb.Clear();
                 lock (_lock)
                 {
                     if (!string.IsNullOrEmpty(logLevelString))
@@ -181,6 +180,11 @@ namespace Microsoft.Extensions.Logging.Console
                 }
             }
 
+            if (sb.Capacity > 1024)
+            {
+                sb.Capacity = 1024;
+            }
+            sb.Clear();
             _sb = sb;
         }
 
