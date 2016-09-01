@@ -70,6 +70,12 @@ namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal
         /// <inheritdoc />
         protected override async Task EmitBatchAsync(IEnumerable<LogEvent> events)
         {
+            await EmitBatchInternalAsync(events);
+        }
+
+        /// <summary>Emit a batch of log events, running asynchronously.</summary>
+        protected async Task EmitBatchInternalAsync(IEnumerable<LogEvent> events)
+        {
             var eventGroups = events.GroupBy(GetBlobKey);
             foreach (var eventGroup in eventGroups)
             {

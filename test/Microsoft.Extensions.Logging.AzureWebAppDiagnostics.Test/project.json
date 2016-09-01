@@ -1,6 +1,6 @@
 {
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
